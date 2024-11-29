@@ -66,15 +66,15 @@
             const marker = L.marker(userLatLng, { draggable: false }).addTo(map);
             marker.bindPopup(insideZone 
                 ? "Vous êtes dans la zone."
-                : "⚠ Vous êtes hors de la zone délimitée !").openPopup();
+                : "⚠ Vous êtes hors de la zone délimitée, veuillez revenir !").openPopup();
 
             if (!insideZone) {
-                alert("Attention : Vous êtes hors de la zone !");
+                alert("Vous êtes hors de la zone du stand, veuillez revenir!");
             }
         }
 
         function onLocationError(e) {
-            alert("Erreur de localisation : " + e.message);
+            alert("Vous êtes très loin du stand!");
         }
 
         // Activer la localisation
