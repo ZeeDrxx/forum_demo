@@ -8,11 +8,11 @@
   <style>
     #map {
       height: 100vh;
-      margin: 0; /* Supprime tout espace autour de la carte */
+      margin: 0;
     }
     body {
-      margin: 0; /* Supprime les marges du corps pour maximiser l'espace de la carte */
-      overflow: hidden; /* Empêche le défilement de la page */
+      margin: 0; 
+      overflow: hidden; 
     }
   </style>
 </head>
@@ -20,27 +20,24 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Définir les limites autorisées (rectangle englobant)
     var bounds = L.latLngBounds(
       [33.597100, -7.669400], // Coin inférieur gauche
       [33.597700, -7.668800]  // Coin supérieur droit
     );
 
-    // Initialiser la carte avec des restrictions sur les limites et le zoom
+    // Initialiser la carte 
     var map = L.map('map', {
       crs: L.CRS.EPSG4326,
-      center: [33.597371, -7.669165], // Centre par défaut
-      zoom: 21, // Niveau de zoom élevé pour maximiser l'espace
-      maxBounds: bounds, // Empêcher le déplacement en dehors des limites
-      maxBoundsViscosity: 1.0, // Restreindre fortement la carte dans les limites
-      zoomControl: false // Désactiver les contrôles de zoom
+      center: [33.597371, -7.669165], 
+      zoom: 21, 
+      maxBounds: bounds, 
+      maxBoundsViscosity: 1.0, 
+      zoomControl: false 
     });
 
-    // Restreindre le niveau de zoom
     map.options.minZoom = 21;
     map.options.maxZoom = 21;
 
-    // Ajouter une superposition d'image
     var imageUrl = 'Assets/Plan.png';
     var imageBounds = [
       [33.597442, -7.669369],
@@ -54,31 +51,27 @@
     ];
 
     L.imageOverlay(imageUrl, imageBounds).addTo(map);
-
     function getUserLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(function(position) {
           var lat = position.coords.latitude;
           var lng = position.coords.longitude;
 
-          // Vérifier si l'utilisateur est dans les limites
           if (bounds.contains([lat, lng])) {
-            // Ajouter un marqueur et centrer sur l'utilisateur
             L.marker([lat, lng]).addTo(map);
             map.setView([lat, lng], 21);
-          } else {
-            // Alerte si hors zone et affichage par défaut
-            alert("Vous êtes en dehors de la zone autorisée. La carte reste centrée sur la vue par défaut.");
-            map.setView([33.597371, -7.669165], 21); // Vue par défaut
+          } else if (!alertShown){
+            alert("⚠️ Vous êtes en dehors de la zone autorisée. La carte reste centrée sur la vue par défaut.");
+            alertShown = true;
+            map.setView([33.597371, -7.669165], 20);
           }
         }, function(error) {
-          alert("Erreur de géolocalisation : " + error.message);
+          alert("❌ Erreur de géolocalisation.");
         });
       } else {
-        alert("La géolocalisation n'est pas supportée par ce navigateur.");
+        alert("⛔ La géolocalisation n'est pas supportée par ce navigateur.");
       }
     }
-
     getUserLocation();
   </script>
 </body>
