@@ -15,24 +15,27 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Définir les limites autorisées
+    // Définir les limites autorisées (rectangle englobant)
     var bounds = L.latLngBounds(
       [33.597100, -7.669400], // Coin inférieur gauche
       [33.597700, -7.668800]  // Coin supérieur droit
     );
 
-    // Initialisation de la carte
+    // Initialiser la carte avec des restrictions sur les limites et le zoom
     var map = L.map('map', {
       crs: L.CRS.EPSG4326,
       center: [33.597298, -7.669207],
       zoom: 18,
-      maxBounds: bounds, // Empêche de sortir des limites
-      maxBoundsViscosity: 1.0, // Force les bords à agir comme un mur
-      minZoom: 18, // Zoom minimum
-      maxZoom: 20 // Zoom maximum
+      maxBounds: bounds, // Empêcher le déplacement en dehors des limites
+      maxBoundsViscosity: 1.0, // Restreindre fortement la carte dans les limites
+      zoomControl: false // Désactiver les contrôles de zoom
     });
 
-    // Ajouter l'image superposée
+    // Restreindre le niveau de zoom
+    map.options.minZoom = 18;
+    map.options.maxZoom = 18;
+
+    // Ajouter une superposition d'image
     var imageUrl = 'Assets/Plan.png';
     var imageBounds = [
       [33.597442, -7.669369],
@@ -47,22 +50,24 @@
 
     L.imageOverlay(imageUrl, imageBounds).addTo(map);
 
-    // Fonction pour obtenir la position de l'utilisateur
     function getUserLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(function(position) {
           var lat = position.coords.latitude;
           var lng = position.coords.longitude;
 
-          // Vérifier si la position est dans les limites
+          // Vérifier si l'utilisateur est dans les limites
           if (bounds.contains([lat, lng])) {
+            // Ajouter un marqueur et centrer sur l'utilisateur
             L.marker([lat, lng]).addTo(map);
             map.setView([lat, lng], 18);
           } else {
-            alert("Vous êtes en dehors de la zone des standes.");
+            // Alerte si hors zone et affichage par défaut
+            alert("Vous êtes en dehors de la zone autorisée. La carte reste centrée sur la vue par défaut.");
+            map.setView([33.597298, -7.669207], 18); // Vue par défaut
           }
         }, function(error) {
-          alert("Erreur de géolocalisation");
+          alert("Erreur de géolocalisation : " + error.message);
         });
       } else {
         alert("La géolocalisation n'est pas supportée par ce navigateur.");
