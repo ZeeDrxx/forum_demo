@@ -15,12 +15,24 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+    // Définir les limites autorisées
+    var bounds = L.latLngBounds(
+      [33.597100, -7.669400], // Coin inférieur gauche
+      [33.597700, -7.668800]  // Coin supérieur droit
+    );
+
+    // Initialisation de la carte
     var map = L.map('map', {
       crs: L.CRS.EPSG4326,
       center: [33.597298, -7.669207],
-      zoom: 18
+      zoom: 18,
+      maxBounds: bounds, // Empêche de sortir des limites
+      maxBoundsViscosity: 1.0, // Force les bords à agir comme un mur
+      minZoom: 18, // Zoom minimum
+      maxZoom: 20 // Zoom maximum
     });
 
+    // Ajouter l'image superposée
     var imageUrl = 'Assets/Plan.png';
     var imageBounds = [
       [33.597442, -7.669369],
@@ -32,18 +44,25 @@
       [33.597369, -7.669381],
       [33.597403, -7.669332]
     ];
-    
+
     L.imageOverlay(imageUrl, imageBounds).addTo(map);
-    
+
+    // Fonction pour obtenir la position de l'utilisateur
     function getUserLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(function(position) {
           var lat = position.coords.latitude;
           var lng = position.coords.longitude;
-          var userMarker = L.marker([lat, lng]).addTo(map);
-          map.setView([lat, lng], 18);
+
+          // Vérifier si la position est dans les limites
+          if (bounds.contains([lat, lng])) {
+            L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 18);
+          } else {
+            alert("Vous êtes en dehors de la zone des standes.");
+          }
         }, function(error) {
-          alert("Vous êtes hors zone, veuillez revenir au stand.");
+          alert("Erreur de géolocalisation");
         });
       } else {
         alert("La géolocalisation n'est pas supportée par ce navigateur.");
