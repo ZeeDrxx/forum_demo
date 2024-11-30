@@ -1,92 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide Numérique</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-        }
-        #map {
-            height: 100%;
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carte interactive</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+    }
+  </style>
 </head>
 <body>
-    <div id="map"></div>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map', {
+      crs: L.CRS.EPSG4326,
+      center: [33.597298, -7.669207],
+      zoom: 18
+    });
 
-    <script>
-        // Initialisation de la carte
-        const map = L.map('map', {
-            zoomControl: false, // Supprimer les contrôles de zoom
-            attributionControl: false // Supprimer le crédit OpenStreetMap
-        }).setView([33.597384, -7.668866], 20); // Zoom rapproché
-
-        // Charger la couche OpenStreetMap (sans crédits)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 21,
-            minZoom: 18
-        }).addTo(map);
-
-        // Définir les coordonnées de la zone
-        const points = [
-            [33.597442, -7.669369],
-            [33.597627, -7.669120],
-            [33.597384, -7.668866],
-            [33.597197, -7.669117],
-            [33.597134, -7.669207],
-            [33.597298, -7.669382],
-            [33.597369, -7.669381],
-            [33.597403, -7.669332]
-        ];
-
-        // Créer un polygone pour délimiter la zone
-        const zone = L.polygon(points, {
-            color: 'blue',
-            fillColor: '#3388ff',
-            fillOpacity: 0.3
-        }).addTo(map);
-
-        // Ajuster la vue pour inclure le polygone
-        map.fitBounds(zone.getBounds());
-
-        // Suivre la localisation de l'utilisateur
-        function onLocationFound(e) {
-            const userLatLng = L.latLng(e.latlng.lat, e.latlng.lng);
-            const insideZone = zone.getBounds().contains(userLatLng);
-
-            // Ajouter un marqueur dynamique
-            const marker = L.marker(userLatLng, { draggable: false }).addTo(map);
-            marker.bindPopup(insideZone 
-                ? "Vous êtes dans la zone."
-                : "⚠ Vous êtes hors de la zone délimitée, veuillez revenir !").openPopup();
-
-            if (!insideZone) {
-                alert("Vous êtes hors de la zone du stand, veuillez revenir!");
-            }
-        }
-
-        function onLocationError(e) {
-            alert("Vous êtes très loin du stand!");
-        }
-
-        // Activer la localisation
-        map.locate({
-            watch: true, 
-            setView: true, 
-            maxZoom: 21,
-            enableHighAccuracy: true
+    var imageUrl = 'Assets/Plan.png';
+    var imageBounds = [
+      [33.597442, -7.669369],
+      [33.597627, -7.669120],
+      [33.597197, -7.669117],
+      [33.597384, -7.668866],
+      [33.597134, -7.669207],
+      [33.597298, -7.669382],
+      [33.597369, -7.669381],
+      [33.597403, -7.669332]
+    ];
+    
+    L.imageOverlay(imageUrl, imageBounds).addTo(map);
+    
+    function getUserLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(function(position) {
+          var lat = position.coords.latitude;
+          var lng = position.coords.longitude;
+          var userMarker = L.marker([lat, lng]).addTo(map);
+          map.setView([lat, lng], 18);
+        }, function(error) {
+          alert("Vous êtes hors zone, veuillez revenir au stand.");
         });
+      } else {
+        alert("La géolocalisation n'est pas supportée par ce navigateur.");
+      }
+    }
 
-        map.on('locationfound', onLocationFound);
-        map.on('locationerror', onLocationError);
-    </script>
+    getUserLocation();
+  </script>
 </body>
 </html>
