@@ -29,14 +29,12 @@
     var map = L.map('map', {
       crs: L.CRS.EPSG4326,
       center: [33.597371, -7.669165], 
-      zoom: 21, 
+      zoom: 20, 
       maxBounds: bounds, 
       maxBoundsViscosity: 1.0, 
       zoomControl: false 
     });
 
-    map.options.minZoom = 21;
-    map.options.maxZoom = 21;
 
     var imageUrl = 'Assets/Plan.png';
     var imageBounds = [
