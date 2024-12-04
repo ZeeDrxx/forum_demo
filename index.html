@@ -9,6 +9,7 @@
     #map {
       height: 100vh;
       margin: 0;
+      background-color: #1a1a1ab6;
     }
     body {
       margin: 0; 
@@ -20,57 +21,82 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    var bounds = L.latLngBounds(
-      [33.597100, -7.669400], // Coin inférieur gauche
-      [33.597700, -7.668800]  // Coin supérieur droit
-    );
+    // Classe pour gérer la carte
+    class InteractiveMap {
+      constructor(mapId, imageUrl, bounds) {
+        this.mapId = mapId;
+        this.imageUrl = imageUrl;
+        this.bounds = L.latLngBounds(bounds[0], bounds[1]);
+        this.alertShown = false;
+        this.map = this.initializeMap();
+        this.addImageOverlay();
+        this.watchUserLocation();
+      }
 
-    // Initialiser la carte 
-    var map = L.map('map', {
-      crs: L.CRS.EPSG4326,
-      center: [33.597371, -7.669165], 
-      zoom: 20, 
-      maxBounds: bounds, 
-      maxBoundsViscosity: 1.0, 
-      zoomControl: false 
-    });
-
-
-    var imageUrl = 'Assets/Plan.png';
-    var imageBounds = [
-      [33.597442, -7.669369],
-      [33.597627, -7.669120],
-      [33.597197, -7.669117],
-      [33.597384, -7.668866],
-      [33.597134, -7.669207],
-      [33.597298, -7.669382],
-      [33.597369, -7.669381],
-      [33.597403, -7.669332]
-    ];
-
-    L.imageOverlay(imageUrl, imageBounds).addTo(map);
-    function getUserLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(function(position) {
-          var lat = position.coords.latitude;
-          var lng = position.coords.longitude;
-
-          if (bounds.contains([lat, lng])) {
-            L.marker([lat, lng]).addTo(map);
-            map.setView([lat, lng], 21);
-          } else if (!alertShown){
-            alert("⚠️ Vous êtes en dehors de la zone autorisée. La carte reste centrée sur la vue par défaut.");
-            alertShown = true;
-            map.setView([33.597371, -7.669165], 20);
-          }
-        }, function(error) {
-          alert("❌ Erreur de géolocalisation.");
+      // Initialiser la carte
+      initializeMap() {
+        return L.map(this.mapId, {
+          crs: L.CRS.EPSG4326,
+          center: [33.597371, -7.669165],
+          zoom: 19,
+          maxBounds: this.bounds,
+          maxBoundsViscosity: 1.0,
+          zoomControl: false,
+          scrollWheelZoom: false,
+          doubleClickZoom: false,     
         });
-      } else {
-        alert("⛔ La géolocalisation n'est pas supportée par ce navigateur.");
+      }
+
+      // Ajouter une image en overlay
+      addImageOverlay() {
+        L.imageOverlay(this.imageUrl, this.bounds).addTo(this.map);
+      }
+
+      // Surveiller la position de l'utilisateur
+      watchUserLocation() {
+        if (!navigator.geolocation) {
+          this.handleError("⛔ La géolocalisation n'est pas supportée par ce navigateur.");
+          return;
+        }
+
+        navigator.geolocation.watchPosition(
+          (position) => this.handleLocationUpdate(position),
+          (error) => this.handleError("❌ Erreur de géolocalisation.")
+        );
+      }
+
+      // Gérer les mises à jour de position
+      handleLocationUpdate(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        if (this.bounds.contains([lat, lng])) {
+          L.marker([lat, lng]).addTo(this.map);
+          this.map.setView([lat, lng], 21);
+        } else if (!this.alertShown) {
+          alert("⚠️ Vous êtes en dehors de la zone autorisée. La carte reste centrée sur la vue par défaut.");
+          this.alertShown = true;
+          this.map.setView([33.597371, -7.669165], 20);
+        }
+      }
+
+      // Gérer les erreurs
+      handleError(message) {
+        alert(message);
       }
     }
-    getUserLocation();
+
+    // Coordonnées des limites
+    const bounds = [
+      [33.597100, -7.669400], // Coin inférieur gauche
+      [33.597700, -7.668800]  // Coin supérieur droit
+    ];
+
+    // URL de l'image
+    const imageUrl = 'Assets/Plan.png';
+
+    // Instancier la carte interactive
+    const interactiveMap = new InteractiveMap('map', imageUrl, bounds);
   </script>
 </body>
 </html>
