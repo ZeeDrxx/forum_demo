@@ -58,7 +58,6 @@
           this.handleError("⛔ La géolocalisation n'est pas supportée par ce navigateur.");
           return;
         }
-
         navigator.geolocation.watchPosition(
           (position) => this.handleLocationUpdate(position),
           (error) => this.handleError("❌ Erreur de géolocalisation.")
@@ -69,7 +68,6 @@
       handleLocationUpdate(position) {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-
         if (this.bounds.contains([lat, lng])) {
           L.marker([lat, lng]).addTo(this.map);
           this.map.setView([lat, lng], 21);
