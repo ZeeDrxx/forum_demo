@@ -12,8 +12,8 @@
       background-color: white;
     }
     body {
-      margin: 0; 
-      overflow: hidden; 
+      margin: 0;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -21,7 +21,6 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Classe pour gérer la carte
     class InteractiveMap {
       constructor(mapId, imageUrl, bounds) {
         this.mapId = mapId;
@@ -30,6 +29,7 @@
         this.alertShown = false;
         this.map = this.initializeMap();
         this.addImageOverlay();
+        this.userCircle = null; // Cercle pour représenter la position de l'utilisateur
         this.watchUserLocation();
       }
 
@@ -43,7 +43,7 @@
           maxBoundsViscosity: 1.0,
           zoomControl: false,
           scrollWheelZoom: false,
-          doubleClickZoom: false,     
+          doubleClickZoom: false,
         });
       }
 
@@ -68,9 +68,21 @@
       handleLocationUpdate(position) {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
+
         if (this.bounds.contains([lat, lng])) {
-          L.marker([lat, lng]).addTo(this.map);
-          this.map.setView([lat, lng], 21);
+          // Mettre à jour ou créer le cercle de localisation
+          if (!this.userCircle) {
+            this.userCircle = L.circle([lat, lng], {
+              radius: 5, // Rayon en mètres
+              color: "blue",
+              fillColor: "lightblue",
+              fillOpacity: 0.5,
+            }).addTo(this.map);
+          } else {
+            this.userCircle.setLatLng([lat, lng]); // Met à jour la position du cercle
+          }
+
+          this.map.setView([lat, lng], 21); // Centre la carte sur l'utilisateur
         } else if (!this.alertShown) {
           alert("⚠️ Vous êtes en dehors de la zone autorisée. La carte reste centrée sur la vue par défaut.");
           this.alertShown = true;
