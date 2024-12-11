@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carte interactive</title>
+  <title>Guide Digital - Paradise Ain Diab</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     #map {
@@ -21,15 +21,15 @@
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    class InteractiveMap {
+    // Classe pour gérer la carte interactive
+    class RealTimeTrackingMap {
       constructor(mapId, imageUrl, bounds) {
         this.mapId = mapId;
         this.imageUrl = imageUrl;
-        this.bounds = L.latLngBounds(bounds[0], bounds[1]);
-        this.alertShown = false;
+        this.bounds = L.latLngBounds(bounds); // Définir les limites de l'image
         this.map = this.initializeMap();
         this.addImageOverlay();
-        this.userCircle = null; // Cercle pour représenter la position de l'utilisateur
+        this.userCircle = null; // Cercle représentant la position de l'utilisateur
         this.watchUserLocation();
       }
 
@@ -37,76 +37,72 @@
       initializeMap() {
         return L.map(this.mapId, {
           crs: L.CRS.EPSG4326,
-          center: [33.597371, -7.669165],
-          zoom: 19,
-          maxBounds: this.bounds,
+          center: [33.597371, -7.669165], // Centre initial
+          zoom: 20,
+          maxBounds: this.bounds, // Limites de navigation
           maxBoundsViscosity: 1.0,
-          zoomControl: false,
-          scrollWheelZoom: false,
-          doubleClickZoom: false,
         });
       }
 
-      // Ajouter une image en overlay
+      // Ajouter l'image en overlay
       addImageOverlay() {
         L.imageOverlay(this.imageUrl, this.bounds).addTo(this.map);
       }
 
-      // Surveiller la position de l'utilisateur
+      // Surveiller la position de l'utilisateur en temps réel
       watchUserLocation() {
         if (!navigator.geolocation) {
-          this.handleError("⛔ La géolocalisation n'est pas supportée par ce navigateur.");
+          alert("⛔ La géolocalisation n'est pas supportée par ce navigateur.");
           return;
         }
+
         navigator.geolocation.watchPosition(
-          (position) => this.handleLocationUpdate(position),
-          (error) => this.handleError("❌ Erreur de géolocalisation.")
+          (position) => this.updateUserLocation(position),
+          (error) => alert("❌ Erreur lors de l'obtention de la position."),
+          { enableHighAccuracy: true } // Utiliser la précision élevée
         );
       }
 
-      // Gérer les mises à jour de position
-      handleLocationUpdate(position) {
+      // Mettre à jour la position de l'utilisateur
+      updateUserLocation(position) {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
-        if (this.bounds.contains([lat, lng])) {
-          // Mettre à jour ou créer le cercle de localisation
-          if (!this.userCircle) {
-            this.userCircle = L.circle([lat, lng], {
-              radius: 5, // Rayon en mètres
-              color: "blue",
-              fillColor: "lightblue",
-              fillOpacity: 0.5,
-            }).addTo(this.map);
-          } else {
-            this.userCircle.setLatLng([lat, lng]); // Met à jour la position du cercle
-          }
-
-          this.map.setView([lat, lng], 21); // Centre la carte sur l'utilisateur
-        } else if (!this.alertShown) {
-          alert("⚠️ Vous êtes en dehors de la zone autorisée. La carte reste centrée sur la vue par défaut.");
-          this.alertShown = true;
-          this.map.setView([33.597371, -7.669165], 20);
+        // Si c'est la première fois, ajouter un cercle pour représenter l'utilisateur
+        if (!this.userCircle) {
+          this.userCircle = L.circle([lat, lng], {
+            radius: 1, // Rayon en mètres
+            color: "blue",
+            fillColor: "lightblue",
+            fillOpacity: 0.7,
+          }).addTo(this.map);
+        } else {
+          // Mettre à jour la position du cercle
+          this.userCircle.setLatLng([lat, lng]);
         }
-      }
 
-      // Gérer les erreurs
-      handleError(message) {
-        alert(message);
+        // Centrer la carte sur la position actuelle
+        this.map.setView([lat, lng], 20);
       }
     }
 
-    // Coordonnées des limites
+    // Coordonnées des 8 points du bloc
     const bounds = [
-      [33.597100, -7.669400], // Coin inférieur gauche
-      [33.597700, -7.668800]  // Coin supérieur droit
+      [33.597442, -7.669369], // Point 1
+      [33.597627, -7.669120], // Point 2
+      [33.597197, -7.669117], // Point 3
+      [33.597384, -7.668866], // Point 4
+      [33.597134, -7.669207], // Point 5
+      [33.597298, -7.669382], // Point 6
+      [33.597369, -7.669381], // Point 7
+      [33.597403, -7.669332]  // Point 8
     ];
 
-    // URL de l'image
+    // URL du plan (remplacer par le chemin correct vers ton image)
     const imageUrl = 'Assets/PlanIRL2.png';
 
-    // Instancier la carte interactive
-    const interactiveMap = new InteractiveMap('map', imageUrl, bounds);
+    // Instancier la carte
+    const trackingMap = new RealTimeTrackingMap('map', imageUrl, bounds);
   </script>
 </body>
 </html>
